@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  coinbaze
+
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  APIKEY:
+    Type: String
+  SECRET:
+    Type: String
+  PASSPHRASE:
+    Type: String
+  SLACKURL:
+    Type: String
+
+Resources:
+  ScheduledEventLogger:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: A Lambda function that logs the payload of messages sent to an associated SQS queue.
+      Runtime: nodejs16.x
+      Handler: out/main.run
+      Environment:
+        Variables:
+          API_KEY: !Ref APIKEY
+          SECRET: !Ref SECRET
+          PASSPHRASE: !Ref PASSPHRASE
+          SLACK_WEBHOOK_URL: !Ref SLACKURL
+
+      Events:
+        CloudWatchEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(12 hours)
+      MemorySize: 128
+      Timeout: 100
+
+Outputs:
+  Function:
+    Description: 'Function ARN'
+    Value: !GetAtt ScheduledEventLogger.Arn
